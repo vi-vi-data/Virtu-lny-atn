@@ -1,0 +1,65 @@
+CREATE TABLE IF NOT EXISTS users (
+  id SERIAL PRIMARY KEY,
+  name VARCHAR(100) NOT NULL,
+  email VARCHAR(150) UNIQUE NOT NULL,
+  password_hash TEXT NOT NULL,
+  preferred_style VARCHAR(100),
+  favorite_colors TEXT,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE IF NOT EXISTS clothing_items (
+  id SERIAL PRIMARY KEY,
+  user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  name VARCHAR(120) NOT NULL,
+  category VARCHAR(50) NOT NULL,
+  color VARCHAR(50),
+  season VARCHAR(50),
+  style VARCHAR(50),
+  formality VARCHAR(50),
+  brand VARCHAR(80),
+  image_url TEXT,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE IF NOT EXISTS outfits (
+  id SERIAL PRIMARY KEY,
+  user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  name VARCHAR(120) NOT NULL,
+  occasion VARCHAR(50),
+  season VARCHAR(50),
+  weather_type VARCHAR(50),
+  ai_generated BOOLEAN DEFAULT FALSE,
+  explanation TEXT,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE IF NOT EXISTS outfit_items (
+  id SERIAL PRIMARY KEY,
+  outfit_id INTEGER NOT NULL REFERENCES outfits(id) ON DELETE CASCADE,
+  clothing_item_id INTEGER NOT NULL REFERENCES clothing_items(id) ON DELETE CASCADE
+);
+
+CREATE TABLE IF NOT EXISTS favorites (
+  id SERIAL PRIMARY KEY,
+  user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  outfit_id INTEGER NOT NULL REFERENCES outfits(id) ON DELETE CASCADE,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  UNIQUE(user_id, outfit_id)
+);
+
+CREATE TABLE IF NOT EXISTS calendar_plans (
+  id SERIAL PRIMARY KEY,
+  user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  outfit_id INTEGER NOT NULL REFERENCES outfits(id) ON DELETE CASCADE,
+  planned_date DATE NOT NULL,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE IF NOT EXISTS ai_recommendations_log (
+  id SERIAL PRIMARY KEY,
+  user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  input_context JSONB NOT NULL,
+  recommended_output JSONB NOT NULL,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);

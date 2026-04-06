@@ -1,0 +1,56 @@
+services:
+  db:
+    image: postgres:15
+    container_name: wardrobe_db
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: virtual_wardrobe
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "5433:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./backend/schema.sql:/docker-entrypoint-initdb.d/01-schema.sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d virtual_wardrobe"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+
+  backend:
+    build:
+      context: ./backend
+    container_name: wardrobe_backend
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      PORT: 5000
+      DATABASE_URL: postgres://postgres:postgres@db:5432/virtual_wardrobe
+      JWT_SECRET: super-secret-jwt-key-change-me
+      FRONTEND_URL: http://localhost:5173
+      GEMINI_API_KEY: ""
+      GEMINI_MODEL: gemini-1.5-flash
+      AZURE_STORAGE_CONNECTION_STRING: ""
+      AZURE_BLOB_CONTAINER: ""
+    ports:
+      - "5001:5000"
+
+  frontend:
+    build:
+      context: ./frontend
+    container_name: wardrobe_frontend
+    restart: unless-stopped
+    depends_on:
+      backend:
+        condition: service_started
+    environment:
+      VITE_API_URL: http://localhost:5001/api
+      VITE_UPLOADS_BASE_URL: http://localhost:5001
+    ports:
+      - "5173:5173"
+
+volumes:
+  postgres_data:
