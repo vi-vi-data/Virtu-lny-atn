@@ -63,5 +63,5 @@ jobs:
         with:
           app-name: 'virtual-wardrobe-backend'
           slot-name: 'Production'
-          package: ./backend
+          package: .
           
