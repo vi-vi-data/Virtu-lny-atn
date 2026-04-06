@@ -33,6 +33,10 @@ app.get('/api/health', (req, res) => {
   res.json({ ok: true, message: 'Virtual wardrobe backend is running.' });
 });
 
+app.get('/', (req, res) => {
+  res.send('Backend is running 🚀');
+});
+
 app.use('/api/auth', authRoutes);
 app.use('/api/clothes', clothesRoutes);
 app.use('/api/upload', uploadRoutes);
